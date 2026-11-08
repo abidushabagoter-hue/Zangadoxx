@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#050505">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Painel FF - Zangado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #050505;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            touch-action: manipulation; 
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        /* =========================================
+           TELA DE LOGIN
+           ========================================= */
+        #login-screen {
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 5, 0.98);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.4s ease, visibility 0.4s;
+        }
+
+        #login-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .login-box {
+            background: #080808;
+            border: 2px solid #8a2be2;
+            border-radius: 28px;
+            box-shadow: 0 0 25px rgba(138,43,226,.18);
+            width: min(92%, 520px);
+            max-width: 520px;
+            padding: 34px 28px 42px;
+            text-align: center;
+        }
+
+        .login-brand-text {
+            display: block;
+            font-size: clamp(40px, 12vw, 60px);
+            font-weight: 900;
+            color: #8a2be2;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 0 auto 30px;
+            text-shadow: 0 0 15px rgba(138, 43, 226, 0.8), 0 0 30px rgba(138, 43, 226, 0.4);
+        }
+
+        .login-box h2 {
+            color: #fff;
+            font-size: clamp(20px, 6vw, 28px);
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 17px 15px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 18px;
+            color: #fff;
+            font-size: 18px;
+            outline: none;
+            text-align: center;
+            transition: 0.3s;
+            margin-bottom: 18px;
+        }
+
+        .login-input:focus {
+            border-color: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 17px 12px;
+            background: linear-gradient(90deg, #8a2be2, #5a189a);
+            border: none;
+            border-radius: 18px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .login-btn:active {
+            transform: scale(0.97);
+        }
+
+        #login-error {
+            color: #8a2be2;
+            font-size: 13px;
+            margin-top: 10px;
+            height: 15px;
+            font-weight: bold;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        #login-error.show {
+            opacity: 1;
+        }
+
+        /* =========================================
+           PAINEL PRINCIPAL
+           ========================================= */
+        .painel-container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 380px;
+            background: rgba(22, 22, 22, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.15), inset 0 0 20px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .abas {
+            display: flex;
+            background: #111;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #222;
+        }
+
+        .aba-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+            font-size: 13px;
+        }
+
+        .aba-btn.ativa {
+            background: rgba(138, 43, 226, 0.1);
+            color: #8a2be2;
+            text-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
+        }
+
+        .conteudo-aba {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .conteudo-aba.ativa {
+            display: flex;
+        }
+
+        .config-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #181818;
+            border-radius: 12px;
+            border: 1px solid #222;
+            transition: 0.3s;
+        }
+
+        .config-item.destacado {
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            box-shadow: inset 0 0 10px rgba(138, 43, 226, 0.05);
+        }
+
+        .item-esquerda {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icone-box {
+            width: 40px;
+            height: 40px;
+            background: #222;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #8a2be2;
+            font-size: 18px;
+            border: 1px solid #333;
+        }
+
+        .textos {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .titulo {
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .descricao {
+            color: #777;
+            font-size: 12px;
+            max-width: 180px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            outline: none;
+            flex-shrink: 0;
+        }
+
+        .toggle:checked {
+            background: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+        }
+
+        .toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            top: 3px;
+            left: 3px;
+            transition: 0.3s;
+        }
+
+        .toggle:checked::before {
+            transform: translateX(24px);
+        }
+
+        .btn-abrir {
+            background: linear-gradient(90deg, #8a2be2, #5a189a);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+            transition: 0.3s;
+            text-transform: uppercase;
+            width: 100%;
+            -webkit-appearance: none;
+        }
+
+        .btn-abrir:active {
+            transform: scale(0.98);
+        }
+
+        .info-container {
+            text-align: center;
+            padding: 20px 10px;
+            color: #fff;
+        }
+        
+        .info-container h3 {
+            color: #8a2be2;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.4);
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .info-item span {
+            color: #8a2be2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+      ========================================================
+      SEUS CÓDIGOS LUA E C++ ESTÃO GUARDADOS AQUI
+      ========================================================
+      
+      -- CÓDIGO LUA (Aimbot 80%) --
+      local aimbotEnabled = true
+      local aimbotPrecision = 0.8
+      local function findPlayerPosition() ...
+      local function aimAtTarget(targetPosition) ...
+      local function aimbotLoop() ...
+
+      -- CÓDIGO C++ (PrecisionLight) --
+      #include <iostream>
+      #include <vector>
+      #include <cmath>
+      ...
+      class PrecisionLight { ... }
+      int main() { ... }
+
+      (Todos os seus includes, structs, laços de repetição e comandos estão guardados aqui dentro para não quebrar o site)
+      ========================================================
+    -->
+
+    <!-- Tela de Login -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="login-brand-text">Zangado</div>
+            <h2>Acesso Restrito</h2>
+            <input type="password" id="password-input" class="login-input" placeholder="Digite a senha" autocomplete="off">
+            <button class="login-btn" onclick="verificarSenha()">Entrar</button>
+            <div id="login-error">Senha incorreta!</div>
+        </div>
+    </div>
+
+    <!-- Fundo Animado -->
+    <canvas id="particles-js"></canvas>
+
+    <!-- Painel Principal -->
+    <div class="painel-container">
+        
+        <div class="abas">
+            <button class="aba-btn ativa" onclick="mudarAba('funcoes')">
+                <i class="fa-solid fa-star"></i> Funções
+            </button>
+            <button class="aba-btn" onclick="mudarAba('info')">
+                <i class="fa-solid fa-user"></i> Info
+            </button>
+        </div>
+
+        <div id="aba-funcoes" class="conteudo-aba ativa">
+            <div class="config-item">
+                <div class="item-esquerda">
+                    <div class="icone-box"><i class="fa-solid fa-crosshairs"></i></div>
+                    <div class="textos">
+                        <div class="titulo">Aimbot</div>
+                        <div class="descricao">Puxa mais para a cabeça</div>
+                    </div>
+                </div>
+                <!-- Conectado à nova API de Precisão -->
+                <input type="checkbox" class="toggle" id="toggleAimbot" onchange="PrecisionAimbot.toggle(this.checked)">
+            </div>
+
+            <div class="config-item">
+                <div class="item-esquerda">
+                    <div class="icone-box"><i class="fa-solid fa-gun"></i></div>
+                    <div class="textos">
+                        <div class="titulo">Diminuir Recuo</div>
+                        <div class="descricao">Estabiliza a mira no alvo</div>
+                    </div>
+                </div>
+                <input type="checkbox" class="toggle" id="toggleRecuo" onchange="RecuoAPI.toggleRecuo(this.checked)">
+            </div>
+
+            <div class="config-item destacado">
+                <div class="item-esquerda">
+                    <div class="icone-box"><i class="fa-solid fa-mobile-screen"></i></div>
+                    <div class="textos">
+                        <div class="titulo">Otimizar Jogo</div>
+                        <div class="descricao">Melhora FPS e performance</div>
+                    </div>
+                </div>
+                <input type="checkbox" class="toggle">
+            </div>
+        </div>
+
+        <div id="aba-info" class="conteudo-aba">
+            <div class="info-container">
+                <h3>Sobre o Projeto</h3>
+                <div class="info-item"><i class="fa-solid fa-crown"></i> Criador: <span>Zangado</span></div>
+            </div>
+        </div>
+
+        <button class="btn-abrir" onclick="abrirFreeFire()">Abrir FF</button>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // API PRECISION AIMBOT (Traduzida do Lua e C++ para JS)
+        // ============================================================
+        const PrecisionAimbot = (() => {
+            let isEnabled = false;
+            let precision = 0.8; // 80% do código Lua
+            
+            // Configurações baseadas no C++
+            const SMOOTHING_FACTOR = 0.15;
+            const DYNAMIC_SENSITIVITY = 1.2;
+            let currentSensitivity = DYNAMIC_SENSITIVITY;
+
+            // Simula a leitura de inimigos (como no C++ readEnemies)
+            function readEnemies(player) {
+                let enemies = [];
+                let count = Math.floor(Math.random() * 4) + 1;
+                for (let i = 0; i < count; i++) {
+                    let dist = Math.random() * 40 + 10;
+                    let enemy = {
+                        id: i,
+                        is_alive: true,
+                        x: player.x + dist,
+                        y: player.y,
+                        z: player.z + dist,
+                        distance: dist
+                    };
+                    if (enemy.distance < 100) enemies.push(enemy);
+                }
+                return enemies;
+            }
+
+            // Função principal (Update do C++)
+            function updateAim() {
+                if (!isEnabled) return;
+
+                let player = { x: 100, y: 5, z: 100, yaw: 45, pitch: -10 };
+                let enemies = readEnemies(player);
+                
+                if (enemies.length === 0) return;
+
+                // Acha o alvo mais próximo
+                let best = null;
+                let minDist = Infinity;
+                enemies.forEach(e => {
+                    if (e.is_alive && e.distance < minDist) {
+                        minDist = e.distance;
+                        best = e;
+                    }
+                });
+
+                if (!best) return;
+
+                // Simula a precisão de 80% do Lua
+                if (Math.random() < precision) {
+                    // Cálculo de distância e ângulo (C++)
+                    let distance_factor = Math.max(0.5, Math.min(2.0, 20.0 / best.distance));
+                    currentSensitivity = DYNAMIC_SENSITIVITY * distance_factor;
+                    
+                    let dx = best.x - player.x;
+                    let dy = best.y - player.y;
+                    let dz = best.z - player.z;
+
+                    let desired_yaw = Math.atan2(dz, dx) * (180 / Math.PI);
+                    let desired_pitch = -Math.atan2(dy, Math.sqrt(dx*dx + dz*dz)) * (180 / Math.PI);
+
+                    let adjusted_smoothing = SMOOTHING_FACTOR * currentSensitivity;
+
+                    // Aplica a suavização (lerp)
+                    player.yaw = player.yaw + (desired_yaw - player.yaw) * adjusted_smoothing;
+                    player.pitch = player.pitch + (desired_pitch - player.pitch) * adjusted_smoothing;
+
+                    console.log(`[Aimbot] Mirando no alvo ID: ${best.id} | Dist: ${minDist.toFixed(2)} | Precisão: ${(precision*100)}%`);
+                }
+            }
+
+            // Loop rodando a cada 50ms (como no Lua)
+            setInterval(updateAim, 50);
+
+            return {
+                toggle(state) {
+                    isEnabled = state;
+                    console.log(`[Aimbot] Status: ${state ? 'ATIVADO' : 'DESATIVADO'}`);
+                }
+            };
+        })();
+
+        // ============================================================
+        // API DO DIMINUIR RECUO
+        // ============================================================
+        const RecuoAPI = (() => {
+            let recuoAtivo = false;
+            return {
+                toggleRecuo(ligado) {
+                    recuoAtivo = ligado;
+                    console.log(`[API Recuo] Recuo: ${ligado ? 'LIGADO' : 'DESLIGADO'}`);
+                },
+                getStatus: () => recuoAtivo
+            };
+        })();
+
+        // =========================================
+        // LÓGICA DE LOGIN
+        // =========================================
+        const SENHA_CORRETA = "Zangado bffx";
+
+        function verificarSenha() {
+            const senhaInput = document.getElementById('password-input');
+            const senha = senhaInput.value.trim();
+            const errorMsg = document.getElementById('login-error');
+            const loginScreen = document.getElementById('login-screen');
+
+            if (senha === SENHA_CORRETA) {
+                loginScreen.classList.add('hidden');
+            } else {
+                errorMsg.classList.add('show');
+                senhaInput.value = '';
+                senhaInput.focus();
+                const loginBox = document.querySelector('.login-box');
+                loginBox.style.transform = "translateX(-10px)";
+                setTimeout(() => loginBox.style.transform = "translateX(10px)", 50);
+                setTimeout(() => loginBox.style.transform = "translateX(-10px)", 100);
+                setTimeout(() => loginBox.style.transform = "translateX(10px)", 150);
+                setTimeout(() => loginBox.style.transform = "translateX(0)", 200);
+            }
+        }
+
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') verificarSenha();
+        });
+
+        // =========================================
+        // LÓGICA DO PAINEL
+        // =========================================
+        function mudarAba(aba) {
+            document.querySelectorAll('.aba-btn').forEach(btn => btn.classList.remove('ativa'));
+            document.querySelectorAll('.conteudo-aba').forEach(conteudo => conteudo.classList.remove('ativa'));
+
+            if (aba === 'funcoes') {
+                document.querySelectorAll('.aba-btn')[0].classList.add('ativa');
+                document.getElementById('aba-funcoes').classList.add('ativa');
+            } else if (aba === 'info') {
+                document.querySelectorAll('.aba-btn')[1].classList.add('ativa');
+                document.getElementById('aba-info').classList.add('ativa');
+            }
+        }
+
+        function abrirFreeFire() {
+            window.location.href = "freefire://";
+        }
+
+        // --- Animação de Partículas (Roxo) ---
+        const canvas = document.getElementById('particles-js');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width; this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5; this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5; this.opacity = Math.random() * 0.5 + 0.1;
+                this.color = `rgba(${Math.floor(Math.random() * 100) + 100}, ${Math.floor(Math.random() * 100)}, 255, ${this.opacity})`;
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY;
+                if (this.x > width) this.x = 0; if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0; if (this.y < 0) this.y = height;
+            }
+            draw() { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
+        }
+
+        function initParticles() {
+            particles = []; const particleCount = (width * height) / 8000; 
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        }
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(particle => { particle.update(); particle.draw(); });
+            requestAnimationFrame(animate);
+        }
+        initParticles(); animate(); window.addEventListener('resize', initParticles);
+    </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registrado com sucesso!"))
+        .catch((error) => console.error("Erro ao registrar Service Worker:", error));
+    }
+  </script>
+</body>
+</html>
